@@ -118,7 +118,6 @@ class MiniMaxAB:
 		#Check if game state is final
 		winner = gameState.getWinner()
 		if winner != None:
-			print("hello")
 			return (winner * 100, None)
 			
 		#If we have reached maximum search depth, evaluate game state
@@ -132,8 +131,8 @@ class MiniMaxAB:
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
 		#Iterate over spaces
-		for y in range(0,gameState._sizey):
-			for x in range(0,gameState._sizex):
+		for y in range(0, gameState._sizey):
+			for x in range(0, gameState._sizex):
 				#Try placing piece
 				if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 					move = Move(x, y)
@@ -204,6 +203,34 @@ class Player:
 		
 	def makeMove(self, gameState):
 		self.__ai.makeMove(gameState)
+		
+	def canMove(self, gameState):
+		#Get current player and number of pieces that they have left to place
+		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
+		piecesLeft = gameState._xPiecesLeft if crrtPlayer == -1 else gameState._oPiecesLeft
+		
+		#Player will always be able to move if they have more pieces
+		if piecesLeft > 0:
+			return True
+			
+		#Otherwise, we need to check if player's tiles have any free neighboring tiles
+		for x in range(0, gameState._sizex):
+			for y in range(0, gameState._sizey):
+				if gameState._spaces[y][x] == crrtPlayer:
+					#Calculate bounds for surrounding tiles
+					leftBound = max(0, x-1)
+					topBound = max(0, y-1)
+					rightBound = min(gameState._sizex-1, x+1)
+					bottomBound = min(gameState._sizey-1, y+1)
+					#Check for free spaces in surrounding tiles
+					for i in range(leftBound, rightBound+1):
+						for j in range(topBound, bottomBound+1):
+							#This loop will check if center tile is free as well. Since center tile is occupied by current player, this will have no effect.
+							if gameState._spaces[j][i] == 0:
+								return True
+		
+		#If player can neither place nor move a piece, they can not move
+		return False
 
 #===================================#
 #            Game State             #
@@ -217,10 +244,10 @@ class GameState:
 	})
 
 	def __init__(self):
-		self._xPiecesLeft = 15
-		self._oPiecesLeft = 15
+		self._xPiecesLeft = 1
+		self._oPiecesLeft = 4
 		self._shiftsLeft = 30
-		self._sizex = 12  # probably a good idea if we make these size members public
+		self._sizex = 12
 		self._sizey = 10
 		self._spaces = [[0 for x in range(self._sizex)] for y in range(self._sizey)]
 		self.__turnStack = deque()
@@ -228,12 +255,12 @@ class GameState:
 
 	def printState(self):
 		#Print header
-		print("=========================== X-RUDDER ===========================")
+		print("===================== X-RUDDER =====================")
 		print(" - Turn: %d (%s)" % (self._turn, GameState.translate[-1 if self._turn % 2 == 0 else 1]))
 		print(" - Pieces left for X: %d" % self._xPiecesLeft)
 		print(" - Pieces left for O: %d" % self._oPiecesLeft)
 		print(" - Shifts left: %d" % self._shiftsLeft)
-		print("================================================================")
+		print("====================================================")
 	
 		#Print column heads
 		print("   |", end = "")
@@ -343,14 +370,22 @@ class GameState:
 #===================================#
 
 #Initialize variables
-players = [Player('X', MiniMaxAB()), Player('O', MiniMaxAB())]
+players = [Player('X', HumanPlayer()), Player('O', HumanPlayer())]
 game = GameState()
 winner = None
 
 #Game loop
 while(winner == None):
+	#Update display
 	game.printState()
-	players[game._turn % 2].makeMove(game)
+	#Do turn
+	crrtPlayer = game._turn % 2
+	if players[crrtPlayer].canMove(game):
+		players[game._turn % 2].makeMove(game)
+	else:
+		print("Current player can't move!")
+		game._turn += 1
+	#Check for winner
 	winner = game.getWinner()
 	
 #Print final game state
