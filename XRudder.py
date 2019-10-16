@@ -48,7 +48,7 @@ class MiniMaxAB:
 		#Use minimax to find remaining moves
 		move = None
 		if gameState._turn % 2 == 0:
-			val, move = self.getMinMove(gameState, 2, -100, 100)
+			val, move = self.getMinMove(gameState, 2, -100, 100) #on turn 42, getMinMove returns None
 		else:
 			val, move = self.getMaxMove(gameState, 2, -100, 100)
 		gameState.makeMove(move)
@@ -70,8 +70,8 @@ class MiniMaxAB:
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
 		#Iterate over spaces
-		for y in range(0,10):
-			for x in range(0,15):
+		for y in range(0,gameState._sizey):
+			for x in range(0,gameState._sizex):
 				#Try placing piece
 				if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 					move = Move(x, y)
@@ -93,8 +93,8 @@ class MiniMaxAB:
 				
 				#Try shifting piece
 				elif gameState._spaces[y][x] == crrtPlayer and gameState._shiftsLeft > 0:
-					for i in [i for i in range(x - 1, x + 2) if i > -1 and i < 15]:
-						for j in [j for j in range(y - 1, y + 2) if (j > -1 and j < 10 and not(i == x and j == y) and (gameState._spaces[j][i] == 0))]:
+					for i in [i for i in range(x - 1, x + 2) if i > -1 and i < gameState._sizex]:
+						for j in [j for j in range(y - 1, y + 2) if (j > -1 and j < gameState._sizey and not(i == x and j == y) and (gameState._spaces[j][i] == 0))]:
 							move = Move(i, j, x, y)
 							gameState.makeMove(move)
 							#Get minimum value of move
@@ -132,8 +132,8 @@ class MiniMaxAB:
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
 		#Iterate over spaces
-		for y in range(0,10):
-			for x in range(0,15):
+		for y in range(0,gameState._sizey):
+			for x in range(0,gameState._sizex):
 				#Try placing piece
 				if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 					move = Move(x, y)
@@ -155,8 +155,8 @@ class MiniMaxAB:
 				
 				#Try shifting piece
 				elif gameState._spaces[y][x] == crrtPlayer and gameState._shiftsLeft > 0:
-					for i in [i for i in range(x - 1, x + 1) if (i > -1 and i < 15)]:
-						for j in [j for j in range(y - 1, y + 1) if (j > -1 and j < 10 and not(i == x and j == y) and (gameState._spaces[j][i] == 0))]:
+					for i in [i for i in range(x - 1, x + 1) if (i > -1 and i < gameState._sizex)]:
+						for j in [j for j in range(y - 1, y + 1) if (j > -1 and j < gameState._sizey and not(i == x and j == y) and (gameState._spaces[j][i] == 0))]:
 							move = Move(i, j, x, y)
 							gameState.makeMove(move)
 							#Get maximum value of move
@@ -180,8 +180,8 @@ class MiniMaxAB:
 		h = 0
 		
 		#Iterate over spaces
-		for y in range(1,9):
-			for x in range(1,14):
+		for y in range(1,gameState._sizey - 1):
+			for x in range(1,gameState._sizex - 1):
 				if gameState._spaces[y][x] != 0:
 					nodeValue = 0
 					for i in range(-1,2):
@@ -220,7 +220,9 @@ class GameState:
 		self._xPiecesLeft = 15
 		self._oPiecesLeft = 15
 		self._shiftsLeft = 30
-		self._spaces = [[0 for x in range(15)] for y in range(10)]
+		self._sizex = 12  # probably a good idea if we make these size members public
+		self._sizey = 10
+		self._spaces = [[0 for x in range(self._sizex)] for y in range(self._sizey)]
 		self.__turnStack = deque()
 		self._turn = 0
 
@@ -235,23 +237,23 @@ class GameState:
 	
 		#Print column heads
 		print("   |", end = "")
-		for x in range(0, 15):
+		for x in range(0, self._sizex):
 			print(" %s |" % chr(ord('A') + x) , end = "")
 		print()
 		
 		#Print by row
-		print("---+" * 16)
-		for y in range(10, 0, -1):
+		print("---+" * (self._sizex + 1))
+		for y in range(self._sizey, 0, -1):
 			print(" %*d|" % (2, y), end = "")
 			for space in self._spaces[y-1]:
 				print(" %s |" % self.translate[space], end = "")
 			print()
-			print("---+" * 16)
+			print("---+" * (self._sizex + 1))
 			
 	def makeMove(self, move):
 		#Check that move is valid
 		#Check that move is within range
-		if move._x < 0 or move._y < 0 or move._x > 14 or move._y > 9:
+		if move._x < 0 or move._y < 0 or move._x > (self._sizex - 1) or move._y > (self._sizey - 1):
 			raise InvalidMoveException('This space is out of bounds!')
 		#Check that space is not taken
 		if self._spaces[move._y][move._x] != 0:
@@ -260,7 +262,7 @@ class GameState:
 		#Shift piece
 		if move._prevX != None:
 			#Check that move is within range
-			if move._prevX < 0 or move._prevY < 0 or move._prevX > 14 or move._prevY > 9:
+			if move._prevX < 0 or move._prevY < 0 or move._prevX > self._sizex or move._prevY > self._sizey:
 				raise InvalidMoveException('This space is out of bounds!')
 			#Check that the piece being moved belongs to the current player
 			if self._spaces[move._prevY][move._prevX] != (-1 if self._turn % 2 == 0 else 1):
@@ -317,8 +319,8 @@ class GameState:
 	def getWinner(self):	
 		winner = None
 		#Iterate over possible middle spaces
-		for y in range(1,9):
-			for x in range(1,14):
+		for y in range(1,(self._sizey - 1)):
+			for x in range(1,(self._sizex - 1)):
 				#Check for X centered around middle space
 				if self._spaces[y][x] != 0 and 4 * self._spaces[y][x] == self._spaces[y - 1][x - 1] + self._spaces[y + 1][x + 1] + self._spaces[y - 1][x + 1] + self._spaces[y + 1][x - 1] and self._spaces[y][x - 1] + self._spaces[y][x + 1] != -2 * self._spaces[y][x]:
 					#If more than one X was formed by the last move, the winner is the last to move
