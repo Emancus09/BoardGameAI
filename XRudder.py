@@ -244,8 +244,8 @@ class GameState:
 	})
 
 	def __init__(self):
-		self._xPiecesLeft = 1
-		self._oPiecesLeft = 4
+		self._xPiecesLeft = 15
+		self._oPiecesLeft = 15
 		self._shiftsLeft = 30
 		self._sizex = 12
 		self._sizey = 10
