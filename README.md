@@ -19,3 +19,13 @@ origCoordX origCoordY newCoordX newCoordY
 Note that the moves entered must respect the official game rules. Otherwise, the program will prompt the user to try again. Also, recognize that X coordinates are letters and that Y coordinates are numbers. Use the CLI graphic to help determine the appropriate input.
 
 Finally, note that we also included minimax AI in this deliverable. We included it because we had already begun working on it at the time of submission. That being said, it isn't complete. Consequently, it's been disabled in the code and should be ignored for the time being.
+
+
+====================================================================================================
+
+
+We certify that this submission is the original work of members of the group and meets
+the Faculty's Expectations of Originality
+
+Emanuel Sharma 40056523 - 10/16/2019
+Steven Iacobellis 40063086 - 10/16/2019
