@@ -48,16 +48,16 @@ class MiniMaxAB:
 		#Use minimax to find remaining moves
 		move = None
 		if gameState._turn % 2 == 0:
-			val, move = self.getMinMove(gameState, 2, -100, 100) #on turn 42, getMinMove returns None
+			val, move = self.getMinMove(gameState, 3, -1000000, 1000000)
 		else:
-			val, move = self.getMaxMove(gameState, 2, -100, 100)
+			val, move = self.getMaxMove(gameState, 1, -1000000, 1000000)
 		gameState.makeMove(move)
 
 	def getMaxMove(self, gameState, height, alpha, beta):
 		#Check if game state is final
 		winner = gameState.getWinner()
 		if winner != None:
-			return (winner * 100, None)
+			return (winner * 1000000, None)
 			
 		#If we have reached maximum search depth, evaluate game state
 		if height == 0:
@@ -65,7 +65,7 @@ class MiniMaxAB:
 		
 		#Maximize heuristic
 		maxMove = None
-		maxValue = -100
+		maxValue = -1000000
 		
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
@@ -111,14 +111,14 @@ class MiniMaxAB:
 								return (maxValue, maxMove)
 							if maxValue > alpha:
 								alpha = maxValue
-		
+								
 		return (maxValue, maxMove)
 
 	def getMinMove(self, gameState, height, alpha, beta):
 		#Check if game state is final
 		winner = gameState.getWinner()
 		if winner != None:
-			return (winner * 100, None)
+			return (winner * 1000000, None)
 			
 		#If we have reached maximum search depth, evaluate game state
 		if height == 0:
@@ -126,7 +126,7 @@ class MiniMaxAB:
 		
 		#Minimize heuristic
 		minMove = None
-		minValue = 100
+		minValue = 1000000
 	
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
@@ -154,8 +154,8 @@ class MiniMaxAB:
 				
 				#Try shifting piece
 				elif gameState._spaces[y][x] == crrtPlayer and gameState._shiftsLeft > 0:
-					for i in [i for i in range(x - 1, x + 1) if (i > -1 and i < gameState._sizex)]:
-						for j in [j for j in range(y - 1, y + 1) if (j > -1 and j < gameState._sizey and not(i == x and j == y) and (gameState._spaces[j][i] == 0))]:
+					for i in [i for i in range(x - 1, x + 2) if (i > -1 and i < gameState._sizex)]:
+						for j in [j for j in range(y - 1, y + 2) if (j > -1 and j < gameState._sizey and gameState._spaces[j][i] == 0)]:
 							move = Move(i, j, x, y)
 							gameState.makeMove(move)
 							#Get maximum value of move
@@ -172,7 +172,7 @@ class MiniMaxAB:
 								return (minValue, move)
 							if minValue < beta:
 								beta = minValue
-		
+								
 		return (minValue, minMove)
 		
 	def evaluate(self, gameState):
@@ -180,12 +180,13 @@ class MiniMaxAB:
 		
 		#Iterate over spaces
 		for y in range(1,gameState._sizey - 1):
-			for x in range(1,gameState._sizex - 1):
+			for x in range(2,gameState._sizex - 2):
 				if gameState._spaces[y][x] != 0:
 					nodeValue = 0
 					for i in range(-1,2):
-						nodeValue += gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1]
-						h += nodeValue
+						nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
+						nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
+					h += nodeValue
 		
 		return h
 		
