@@ -1,3 +1,5 @@
+import random
+
 from frozendict import frozendict
 from collections import deque
 import math
@@ -92,10 +94,18 @@ class MiniMaxAB:
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
 		#Iterate over spaces by spiraling around kernel
 		for w2 in range(1, max(max(gameState._sizex - self.__kernelX - 1, self.__kernelX), max(gameState._sizey - self.__kernelY - 1, self.__kernelY)) + 1):
+			#Create range of positions in Y to visit
+			listY = range(self.__kernelY - w2, self.__kernelY + w2 + 1)
+			#Randomly reorder this list
+			rlistY = random.sample(listY, (self.__kernelY + w2 + 1) - (self.__kernelY - w2))
 			#Ensure that spaces tested fall within bounds of board
-			for y in [y for y in range(self.__kernelY - w2, self.__kernelY + w2 + 1) if y >= 0 and y < gameState._sizey]:
+			for y in [y for y in rlistY if y >= 0 and y < gameState._sizey]:
+				#Create range of positions in X to visit
+				listX = range(self.__kernelX - w2, self.__kernelX + w2 + 1)
+				#Randomly reorder the list
+				rlistX = random.sample(listX,(self.__kernelX + w2 + 1) - (self.__kernelX - w2))
 				#Ensure that spaces tested fall within bounds of board and border of spiral
-				for x  in [x for x in range(self.__kernelX - w2, self.__kernelX + w2 + 1) if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:					
+				for x  in [x for x in rlistX if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
 					#Try placing piece
 					if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 						move = Move(x, y)
@@ -156,10 +166,18 @@ class MiniMaxAB:
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
 		#Iterate over spaces by spiraling around kernel
 		for w2 in range(1, max(max(gameState._sizex - self.__kernelX - 1, self.__kernelX), max(gameState._sizey - self.__kernelY - 1, self.__kernelY)) + 1):
+			# Create range of positions in Y to visit
+			listY = range(self.__kernelY - w2, self.__kernelY + w2 + 1)
+			# Randomly reorder this list
+			rlistY = random.sample(listY, (self.__kernelY + w2 + 1) - (self.__kernelY - w2))
 			#Ensure that spaces tested fall within bounds of board
-			for y in [y for y in range(self.__kernelY - w2, self.__kernelY + w2 + 1) if y >= 0 and y < gameState._sizey]:
+			for y in [y for y in rlistY if y >= 0 and y < gameState._sizey]:
+				#Create range of positions in X to visit
+				listX = range(self.__kernelX - w2, self.__kernelX + w2 + 1)
+				#Randomly reorder the list
+				rlistX = random.sample(listX,(self.__kernelX + w2 + 1) - (self.__kernelX - w2))
 				#Ensure that spaces tested fall within bounds of board and border of spiral
-				for x  in [x for x in range(self.__kernelX - w2, self.__kernelX + w2 + 1) if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
+				for x  in [x for x in rlistX if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
 					#Try placing piece
 					if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 						move = Move(x, y)
@@ -398,7 +416,7 @@ class GameState:
 #===================================#
 
 #Initialize variables
-players = [Player('X', MiniMaxAB()), Player('O', HumanPlayer())]
+players = [Player('X', MiniMaxAB()), Player('O', MiniMaxAB())]
 game = GameState()
 winner = None
 
