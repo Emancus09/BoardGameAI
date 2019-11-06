@@ -47,6 +47,7 @@ class HumanPlayer:
 			break
 	
 class MiniMaxAB:
+
 	def makeMove(self, gameState):
 		#hard-code opening move for efficiency (makes opening 3 times faster)
 		if gameState._turn < 2:
@@ -59,12 +60,12 @@ class MiniMaxAB:
 		move = None
 		depth = 3
 		bound = 1000000 + depth - 1
-		timeBefore = time.time()
+		self.__moveStartTime = time.time()
 		if gameState._turn % 2 == 0:
 			val, move = self.getMinMove(gameState, depth, -bound, bound)
 		else:
 			val, move = self.getMaxMove(gameState, depth, -bound, bound)
-		print(f"Time elapsed: {time.time() - timeBefore:.3f}")
+		print(f"Time elapsed: {time.time() - self.__moveStartTime:.3f}")
 		#Update kernel
 		self.__kernelX = move._x
 		self.__kernelY = move._y
@@ -85,8 +86,8 @@ class MiniMaxAB:
 		if winner != None:
 			return (winner * (1000000 + height), None)
 			
-		#If we have reached maximum search depth, evaluate game state
-		if height == 0:
+		#If we have reached maximum search depth or if we have run out of computation time, evaluate game state
+		if height == 0 or (time.time() - self.__moveStartTime) > 4.99:
 			return (self.evaluate(gameState), None)
 		
 		#Maximize heuristic
@@ -157,8 +158,8 @@ class MiniMaxAB:
 		if winner != None:
 			return (winner * (1000000 + height), None)
 			
-		#If we have reached maximum search depth, evaluate game state
-		if height == 0:
+		#If we have reached maximum search depth or if we have run out of computation time, evaluate game state
+		if height == 0 or (time.time() - self.__moveStartTime) > 4.99:
 			return (self.evaluate(gameState), None)
 		
 		#Minimize heuristic
