@@ -1,4 +1,5 @@
 import random
+import time
 
 from frozendict import frozendict
 from collections import deque
@@ -58,10 +59,12 @@ class MiniMaxAB:
 		move = None
 		depth = 3
 		bound = 1000000 + depth - 1
+		timeBefore = time.time()
 		if gameState._turn % 2 == 0:
 			val, move = self.getMinMove(gameState, depth, -bound, bound)
 		else:
 			val, move = self.getMaxMove(gameState, depth, -bound, bound)
+		print(f"Time elapsed: {time.time() - timeBefore:.3f}")
 		#Update kernel
 		self.__kernelX = move._x
 		self.__kernelY = move._y
