@@ -49,6 +49,7 @@ class MiniMaxAB:
 		if gameState._turn < 2:
 			self.determineInitialKernel(gameState)
 			gameState.makeMove(Move(self.__kernelX, self.__kernelY))
+			print(f"Move made: {chr(self.__kernelX + 65)} {self.__kernelY + 1}")
 			return
 			
 		#Use minimax to find remaining moves
@@ -56,18 +57,19 @@ class MiniMaxAB:
 		depth = 3
 		bound = 1000000 + depth - 1
 		if gameState._turn % 2 == 0:
-			val, move = self.getMinMove(gameState, 3, -bound, bound)
+			val, move = self.getMinMove(gameState, depth, -bound, bound)
 		else:
-			val, move = self.getMaxMove(gameState, 3, -bound, bound)
+			val, move = self.getMaxMove(gameState, depth, -bound, bound)
 		#Update kernel
 		self.__kernelX = move._x
 		self.__kernelY = move._y
+		print(f"Move made: {chr(move._x + 65)} {move._y + 1}")
 		gameState.makeMove(move)
-		
+
 	def determineInitialKernel(self, gameState):
 		#Try center
 		self.__kernelX = int(gameState._sizex / 2)
-		self.__kernelY = int(gameState._sizex / 2)
+		self.__kernelY = int(gameState._sizey / 2)
 		#Otherwise, try spot to the right
 		if (gameState._spaces[self.__kernelY][self.__kernelX] != 0):
 			self.__kernelX = self.__kernelX + 1
@@ -396,7 +398,7 @@ class GameState:
 #===================================#
 
 #Initialize variables
-players = [Player('X', HumanPlayer()), Player('O', MiniMaxAB())]
+players = [Player('X', MiniMaxAB()), Player('O', HumanPlayer())]
 game = GameState()
 winner = None
 
