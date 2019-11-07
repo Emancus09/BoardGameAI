@@ -48,6 +48,9 @@ class HumanPlayer:
 	
 class MiniMaxAB:
 
+	def __init__(self, heuristic):
+		self.evaluate = heuristic
+
 	def makeMove(self, gameState):
 		#hard-code opening move for efficiency (makes opening 3 times faster)
 		if gameState._turn < 2:
@@ -69,7 +72,10 @@ class MiniMaxAB:
 		#Update kernel
 		self.__kernelX = move._x
 		self.__kernelY = move._y
-		print(f"Move made: {chr(move._x + 65)} {move._y + 1}")
+		if (move._prevX != None):
+			print(f"Move made: {chr(move._prevX + 65)} {move._prevY + 1} -> {chr(move._x + 65)} {move._y + 1}")
+		else:
+			print(f"Move made: {chr(move._x + 65)} {move._y + 1}")
 		gameState.makeMove(move)
 
 	def determineInitialKernel(self, gameState):
@@ -87,7 +93,7 @@ class MiniMaxAB:
 			return (winner * (1000000 + height), None)
 			
 		#If we have reached maximum search depth or if we have run out of computation time, evaluate game state
-		if height == 0 or (time.time() - self.__moveStartTime) > 4.99:
+		if height == 0:# or (time.time() - self.__moveStartTime) > 4.99:
 			return (self.evaluate(gameState), None)
 		
 		#Maximize heuristic
@@ -159,7 +165,7 @@ class MiniMaxAB:
 			return (winner * (1000000 + height), None)
 			
 		#If we have reached maximum search depth or if we have run out of computation time, evaluate game state
-		if height == 0 or (time.time() - self.__moveStartTime) > 4.99:
+		if height == 0:# or (time.time() - self.__moveStartTime) > 4.99:
 			return (self.evaluate(gameState), None)
 		
 		#Minimize heuristic
@@ -224,20 +230,20 @@ class MiniMaxAB:
 		
 		return (minValue, minMove)
 		
-	def evaluate(self, gameState):
-		h = 0
-		
-		#Iterate over spaces
-		for y in range(1,gameState._sizey - 1):
-			for x in range(2,gameState._sizex - 2):
-				if gameState._spaces[y][x] != 0:
-					nodeValue = 0
-					for i in range(-1,2):
-						nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
-						nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
-					h += nodeValue
-		
-		return h
+	#def evaluate(self, gameState):
+	#	h = 0
+	#
+	#	#Iterate over spaces
+	#	for y in range(1,gameState._sizey - 1):
+	#		for x in range(2,gameState._sizex - 2):
+	#			if gameState._spaces[y][x] != 0:
+	#				nodeValue = 0
+	#				for i in range(-1,2):
+	#					nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
+	#					nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
+	#				h += nodeValue
+	#
+	#	return h
 		
 #===================================#
 #              Player               #
@@ -418,9 +424,38 @@ class GameState:
 #===================================#
 #               Main                #
 #===================================#
+def h1(gameState):
+
+	h = 0
+
+	# Iterate over spaces
+	for y in range(1, gameState._sizey - 1):
+		for x in range(2, gameState._sizex - 2):
+			if gameState._spaces[y][x] != 0:
+				nodeValue = 0
+				for i in range(-1, 2):
+					nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
+					nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
+				h += nodeValue
+	return h
+
+def h2(gameState):
+
+	h = 0
+
+	# Iterate over spaces
+	for y in range(1, gameState._sizey - 1):
+		for x in range(2, gameState._sizex - 2):
+			if gameState._spaces[y][x] != 0:
+				nodeValue = 0
+				for i in range(-1, 2):
+					nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
+					nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
+				h += nodeValue
+	return h
 
 #Initialize variables
-players = [Player('X', MiniMaxAB()), Player('O', MiniMaxAB())]
+players = [Player('X', MiniMaxAB(h1)), Player('O', MiniMaxAB(h2))]
 game = GameState()
 winner = None
 
