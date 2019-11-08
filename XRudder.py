@@ -61,7 +61,7 @@ class MiniMaxAB:
 			
 		#Use minimax to find remaining moves
 		move = None
-		depth = 3
+		depth = 2
 		bound = 1000000 + depth - 1
 		self.__moveStartTime = time.time()
 		if gameState._turn % 2 == 0:
@@ -425,18 +425,29 @@ class GameState:
 #               Main                #
 #===================================#
 def h1(gameState):
-
 	h = 0
 
 	# Iterate over spaces
 	for y in range(1, gameState._sizey - 1):
 		for x in range(2, gameState._sizex - 2):
 			if gameState._spaces[y][x] != 0:
+				# Get value of piece
 				nodeValue = 0
+				factor = 1.0
+				if -gameState._spaces[y][x] == gameState._spaces[y][x + 1] == gameState._spaces[y][x - 1]:
+					continue
 				for i in range(-1, 2):
+					if i != 0 and (
+							gameState._spaces[y + i][x - 1] == -gameState._spaces[y][x] or gameState._spaces[y + i][
+						x + 1] == -gameState._spaces[y][x]):
+						continue
 					nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
-					nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
-				h += nodeValue
+					nodeValue += 0.5 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
+				h += factor * nodeValue
+
+	# Get number of pieces
+	h = h - gameState._xPiecesLeft + gameState._oPiecesLeft
+
 	return h
 
 def h2(gameState):
@@ -454,29 +465,49 @@ def h2(gameState):
 				h += nodeValue
 	return h
 
-#Initialize variables
-players = [Player('X', MiniMaxAB(h1)), Player('O', MiniMaxAB(h2))]
-game = GameState()
-winner = None
+gamesPlayed = 0
+oWinCount = 0
+xWinCount = 0
+tieCount = 0
+weirdCount = 0
 
-#Game loop
-while(winner == None):
-	#Update display
+for x in range(100):
+
+	#Initialize variables
+	players = [Player('X', MiniMaxAB(h1)), Player('O', MiniMaxAB(h2))]
+
+	game = GameState()
+	winner = None
+
+	#Game loop
+	while(winner == None):
+		#Update display
+		game.printState()
+		#Do turn
+		crrtPlayer = game._turn % 2
+		if players[crrtPlayer].canMove(game):
+			players[game._turn % 2].makeMove(game)
+		else:
+			print("Current player can't move!")
+			game._turn += 1
+		#Check for winner
+		winner = game.getWinner()
+
+	#Print final game state
 	game.printState()
-	#Do turn
-	crrtPlayer = game._turn % 2
-	if players[crrtPlayer].canMove(game):
-		players[game._turn % 2].makeMove(game)
+	gamesPlayed += 1
+	#Print winner
+	if winner == 0:
+		print("It's a tie!")
+		tieCount += 1
+	elif winner == -1:
+		print("%s wins!" % GameState.translate[winner])
+		xWinCount += 1
+	elif winner == 1:
+		print("%s wins!" % GameState.translate[winner])
+		oWinCount += 1
 	else:
-		print("Current player can't move!")
-		game._turn += 1
-	#Check for winner
-	winner = game.getWinner()
-	
-#Print final game state
-game.printState()
-#Print winner
-if winner == 0:
-	print("It's a tie!")
-else:
-	print("%s wins!" % GameState.translate[winner])
+		weirdCount += 1
+
+
+print(f"games played {gamesPlayed}\no win count: {oWinCount}\nx win count: {oWinCount}\ntie count: {tieCount}\nweird count: {weirdCount}")
