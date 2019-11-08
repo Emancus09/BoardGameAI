@@ -1,6 +1,7 @@
 from frozendict import frozendict
 from collections import deque
 import math
+import time
 
 #===================================#
 #               Move                #
@@ -45,7 +46,7 @@ class HumanPlayer:
 	
 class MiniMaxAB:
 	def makeMove(self, gameState):
-		#hard-code opening move for efficiency (makes opening 3 times faster)
+		#Hard-code opening move for efficiency (makes opening much faster)
 		if gameState._turn < 2:
 			self.determineInitialKernel(gameState)
 			gameState.makeMove(Move(self.__kernelX, self.__kernelY))
@@ -53,17 +54,22 @@ class MiniMaxAB:
 			return
 			
 		#Use minimax to find remaining moves
-		move = None
-		depth = 3
-		bound = 1000000 + depth - 1
+		self.__depth = 3
+		bound = 1000000 + self.__depth - 1
+		self.__moveStartTime = time.time()
 		if gameState._turn % 2 == 0:
-			val, move = self.getMinMove(gameState, depth, -bound, bound)
+			val, move = self.getMinMove(gameState, self.__depth, -bound, bound)
 		else:
-			val, move = self.getMaxMove(gameState, depth, -bound, bound)
+			val, move = self.getMaxMove(gameState, self.__depth, -bound, bound)
+		print(f"Time elapsed: {time.time() - self.__moveStartTime:.3f}")
+		
 		#Update kernel
 		self.__kernelX = move._x
 		self.__kernelY = move._y
-		print(f"Move made: {chr(move._x + 65)} {move._y + 1}")
+		if (move._prevX != None):
+			print(f"Move made: {chr(move._prevX + 65)} {move._prevY + 1} -> {chr(move._x + 65)} {move._y + 1}")
+		else:
+			print(f"Move made: {chr(move._x + 65)} {move._y + 1}")
 		gameState.makeMove(move)
 
 	def determineInitialKernel(self, gameState):
@@ -86,16 +92,23 @@ class MiniMaxAB:
 		
 		#Maximize heuristic
 		maxMove = None
-		maxValue = -1000000 - height
+		maxValue = -1000000 - height + 1
 		
+		#Game state
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
+		
 		#Iterate over spaces by spiraling around kernel
 		for w2 in range(1, max(max(gameState._sizex - self.__kernelX - 1, self.__kernelX), max(gameState._sizey - self.__kernelY - 1, self.__kernelY)) + 1):
 			#Ensure that spaces tested fall within bounds of board
 			for y in [y for y in range(self.__kernelY - w2, self.__kernelY + w2 + 1) if y >= 0 and y < gameState._sizey]:
 				#Ensure that spaces tested fall within bounds of board and border of spiral
-				for x  in [x for x in range(self.__kernelX - w2, self.__kernelX + w2 + 1) if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:					
+				for x  in [x for x in range(self.__kernelX - w2, self.__kernelX + w2 + 1) if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
+					
+					#if we are at the root search node and we have surpassed 4.5 seconds, we reduce our search depth to 2
+					if height == self.__depth and (time.time() - self.__moveStartTime) > 4.5:
+						height = 2
+
 					#Try placing piece
 					if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 						move = Move(x, y)
@@ -150,16 +163,23 @@ class MiniMaxAB:
 		
 		#Minimize heuristic
 		minMove = None
-		minValue = 1000000 + height
-	
+		minValue = 1000000 + height - 1
+		
+		#Game state
 		piecesLeft = gameState._xPiecesLeft if gameState._turn % 2 == 0 else gameState._oPiecesLeft
 		crrtPlayer = -1 if gameState._turn % 2 == 0 else 1
+		
 		#Iterate over spaces by spiraling around kernel
 		for w2 in range(1, max(max(gameState._sizex - self.__kernelX - 1, self.__kernelX), max(gameState._sizey - self.__kernelY - 1, self.__kernelY)) + 1):
 			#Ensure that spaces tested fall within bounds of board
 			for y in [y for y in range(self.__kernelY - w2, self.__kernelY + w2 + 1) if y >= 0 and y < gameState._sizey]:
 				#Ensure that spaces tested fall within bounds of board and border of spiral
 				for x  in [x for x in range(self.__kernelX - w2, self.__kernelX + w2 + 1) if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
+					
+					#if we are at the root search node and we have surpassed 4.5 seconds, we reduce our search depth to 2
+					if height == self.__depth and (time.time() - self.__moveStartTime) > 4.5:
+						height = 2
+						
 					#Try placing piece
 					if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 						move = Move(x, y)
