@@ -207,11 +207,20 @@ class MiniMaxAB:
 		for y in range(1,gameState._sizey - 1):
 			for x in range(2,gameState._sizex - 2):
 				if gameState._spaces[y][x] != 0:
+					#Get value of piece
 					nodeValue = 0
+					factor = 1.0
+					if  -gameState._spaces[y][x] == gameState._spaces[y][x + 1] == gameState._spaces[y][x - 1]:
+						factor = 0.5
 					for i in range(-1,2):
+						if i != 0 and (gameState._spaces[y + i][x - 1] == -gameState._spaces[y][x] or gameState._spaces[y + i][x + 1] == -gameState._spaces[y][x]):
+							factor = 0.5
 						nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
-						nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
-					h += nodeValue
+						nodeValue += 0.5 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
+					h += factor * nodeValue
+					
+		#Get number of pieces
+		h = h + 2*(gameState._oPiecesLeft - gameState._xPiecesLeft)
 		
 		return h
 		
@@ -396,7 +405,7 @@ class GameState:
 #===================================#
 
 #Initialize variables
-players = [Player('X', HumanPlayer()), Player('O', MiniMaxAB())]
+players = [Player('X', MiniMaxAB()), Player('O', MiniMaxAB())]
 game = GameState()
 winner = None
 
