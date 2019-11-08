@@ -407,11 +407,7 @@ class GameState:
 #===================================#
 
 #Initialize variables
-<<<<<<< HEAD
 players = [Player('X', MiniMaxAB()), Player('O', MiniMaxAB())]
-=======
-players = [Player('X', MiniMaxAB()), Player('O', HumanPlayer())]
->>>>>>> 70c13aef8b575cf237b67646b18cc16f052c618e
 game = GameState()
 winner = None
 
