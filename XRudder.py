@@ -510,4 +510,4 @@ for x in range(100):
 		weirdCount += 1
 
 
-print(f"games played {gamesPlayed}\no win count: {oWinCount}\nx win count: {oWinCount}\ntie count: {tieCount}\nweird count: {weirdCount}")
+print(f"games played {gamesPlayed}\no win count: {oWinCount}\nx win count: {xWinCount}\ntie count: {tieCount}\nweird count: {weirdCount}")
