@@ -61,13 +61,14 @@ class MiniMaxAB:
 			
 		#Use minimax to find remaining moves
 		move = None
-		depth = 2
+		depth = 3
 		bound = 1000000 + depth - 1
 		self.__moveStartTime = time.time()
 		if gameState._turn % 2 == 0:
 			val, move = self.getMinMove(gameState, depth, -bound, bound)
 		else:
 			val, move = self.getMaxMove(gameState, depth, -bound, bound)
+
 		print(f"Time elapsed: {time.time() - self.__moveStartTime:.3f}")
 		#Update kernel
 		self.__kernelX = move._x
@@ -116,6 +117,11 @@ class MiniMaxAB:
 				rlistX = random.sample(listX,(self.__kernelX + w2 + 1) - (self.__kernelX - w2))
 				#Ensure that spaces tested fall within bounds of board and border of spiral
 				for x  in [x for x in rlistX if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
+
+					#if we are in the top search node and we have surpassed 4.5 seconds on a depth of level 3, then we reduce our search to a depth of level 2
+					if height == 3 and (time.time() - self.__moveStartTime) > 4.5:
+						height = 2
+
 					#Try placing piece
 					if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 						move = Move(x, y)
@@ -188,6 +194,11 @@ class MiniMaxAB:
 				rlistX = random.sample(listX,(self.__kernelX + w2 + 1) - (self.__kernelX - w2))
 				#Ensure that spaces tested fall within bounds of board and border of spiral
 				for x  in [x for x in rlistX if x >= 0 and x < gameState._sizex and max(abs(x - self.__kernelX), abs(y - self.__kernelY)) == w2]:
+
+					#if we are in the top search node and we have surpassed 4.5 seconds on a depth of level 3, then we reduce our search to a depth of level 2
+					if height == 3 and (time.time() - self.__moveStartTime) > 4.5:
+						height = 2
+
 					#Try placing piece
 					if gameState._spaces[y][x] == 0 and piecesLeft > 0:
 						move = Move(x, y)
@@ -229,21 +240,6 @@ class MiniMaxAB:
 									return (minValue, move)
 		
 		return (minValue, minMove)
-		
-	#def evaluate(self, gameState):
-	#	h = 0
-	#
-	#	#Iterate over spaces
-	#	for y in range(1,gameState._sizey - 1):
-	#		for x in range(2,gameState._sizex - 2):
-	#			if gameState._spaces[y][x] != 0:
-	#				nodeValue = 0
-	#				for i in range(-1,2):
-	#					nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
-	#					nodeValue += 0.75 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
-	#				h += nodeValue
-	#
-	#	return h
 		
 #===================================#
 #              Player               #
@@ -435,18 +431,18 @@ def h1(gameState):
 				nodeValue = 0
 				factor = 1.0
 				if -gameState._spaces[y][x] == gameState._spaces[y][x + 1] == gameState._spaces[y][x - 1]:
-					continue
+					factor = 0.5
 				for i in range(-1, 2):
 					if i != 0 and (
 							gameState._spaces[y + i][x - 1] == -gameState._spaces[y][x] or gameState._spaces[y + i][
 						x + 1] == -gameState._spaces[y][x]):
-						continue
+						factor = 0.5
 					nodeValue += gameState._spaces[y + i][x - 2] + gameState._spaces[y + i][x + 2]
 					nodeValue += 0.5 * (gameState._spaces[y + i][x - 1] + gameState._spaces[y + i][x + 1])
 				h += factor * nodeValue
 
 	# Get number of pieces
-	h = h - gameState._xPiecesLeft + gameState._oPiecesLeft
+	h = h + 2 * (gameState._oPiecesLeft - gameState._xPiecesLeft)
 
 	return h
 
