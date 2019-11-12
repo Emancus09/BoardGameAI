@@ -426,8 +426,29 @@ class GameState:
 #               Main                #
 #===================================#
 
+#Allow user to choose whether players should be humans or not
+print("===================== X-RUDDER =====================")
+
+#Get player x
+playerXIn = None
+while(playerXIn != "1" and playerXIn != "2"):
+	print("Select whether player 'X' should be a human or an AI ")
+	print(" [1] Human")
+	print(" [2] AI")
+	playerXIn = input()
+#Get player o
+playerOIn = None
+while(playerOIn != "1" and playerOIn != "2"):
+	print("Select whether player 'O' should be a human or an AI ")
+	print(" [1] Human")
+	print(" [2] AI")
+	playerOIn = input()
+	
+print("====================================================")
+
+
 #Initialize variables
-players = [Player('X', MiniMaxAB()), Player('O', MiniMaxAB())]
+players = [Player('X', HumanPlayer() if playerXIn == "1" else MiniMaxAB()), Player('O', HumanPlayer() if playerOIn == "1" else MiniMaxAB())]
 game = GameState()
 winner = None
 
