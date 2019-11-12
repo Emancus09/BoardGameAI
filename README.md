@@ -20,7 +20,7 @@ Note that the moves entered must respect the official game rules. Otherwise, the
 
 Finally, note that we also included minimax AI in this deliverable. We included it because we had already begun working on it at the time of submission. That being said, it isn't complete. Consequently, it's been disabled in the code and should be ignored for the time being.
 
----
+### Deliverable 2
 
 For deliverable 2, the program must include an AI capable of playing the game using minimax search and a simple heuristic.
 
